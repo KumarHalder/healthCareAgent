@@ -1,0 +1,29 @@
+# HealthBot: AI-Powered Patient Education System
+# Dependencies for MediTech Solutions HealthBot Prototype
+
+# Core LangChain framework (using newer version for Python 3.13 compatibility)
+langchain
+
+# OpenAI integration for language models  
+langchain_openai
+
+# LangGraph for workflow management
+langgraph
+
+# LangChain Hub for prompt templates
+langchainhub
+
+# Tavily search engine for web search
+tavily-python
+
+# LangChain community tools
+langchain-community
+
+# Environment variable management
+python-dotenv
+
+# Ensure we get compatible NumPy (if needed as dependency)
+numpy
+
+# Graph visualization library
+grandalf
