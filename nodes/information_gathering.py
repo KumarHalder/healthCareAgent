@@ -22,6 +22,16 @@ def information_gathering_node(state: HealthBotState) -> HealthBotState:
     Returns:
         HealthBotState: Updated state with search results and sources
     """
+    # Add debug message to trace node execution
+    node_message = {
+        "type": "system", 
+        "node": "information_gathering", 
+        "phase": "2",
+        "action": "starting_web_search",
+        "topic": state["health_topic"]
+    }
+    state["messages"].append(node_message)
+    
     try:
         health_topic = state["health_topic"]
         
@@ -54,6 +64,17 @@ def information_gathering_node(state: HealthBotState) -> HealthBotState:
             tool_call_id = tool_call['id']
             function_name = tool_call['name']
             arguments = tool_call['args']
+            
+            # Log tool call execution
+            tool_call_message = {
+                "type": "system", 
+                "node": "information_gathering", 
+                "action": "tool_call_executed",
+                "tool": function_name,
+                "arguments": arguments,
+                "tool_call_id": tool_call_id
+            }
+            state["messages"].append(tool_call_message)
             
             if function_name == 'web_search':
                 print(f"🚀 Executing {function_name} with args: {arguments}")
@@ -95,6 +116,17 @@ def information_gathering_node(state: HealthBotState) -> HealthBotState:
         final_response = tool_llm.invoke(messages)
         print(f"✅ Search completed for {health_topic}")
         
+        # Log search results obtained
+        search_results_message = {
+            "type": "system",
+            "node": "information_gathering", 
+            "action": "search_results_obtained",
+            "results_count": len(search_results),
+            "sources_count": len(sources),
+            "final_response_content": final_response.content[:200] + "..." if len(final_response.content) > 200 else final_response.content
+        }
+        state["messages"].append(search_results_message)
+        
         # Fallback: if no structured results, use the final response content
         if not search_results:
             search_results = [{
@@ -113,11 +145,32 @@ def information_gathering_node(state: HealthBotState) -> HealthBotState:
         state["information_sources"] = sources
         state["current_phase"] = "information_processing"
         
+        # Log successful completion
+        completion_message = {
+            "type": "system", 
+            "node": "information_gathering", 
+            "action": "search_completed_successfully",
+            "results_stored": len(search_results),
+            "sources_stored": len(sources),
+            "next_phase": "information_processing"
+        }
+        state["messages"].append(completion_message)
+        
         print(f"✅ Found {len(search_results)} relevant medical sources")
         print(f"🔗 Collected {len(sources)} source URLs")
         print("📚 Processing information to create patient-friendly summary...\n")
         
     except Exception as e:
+        # Log error for debugging
+        error_message = {
+            "type": "system", 
+            "node": "information_gathering", 
+            "action": "error",
+            "error_type": "search_failed",
+            "error_details": str(e)
+        }
+        state["messages"].append(error_message)
+        
         state["error_message"] = f"Error during information gathering: {str(e)}"
         print(f"❌ Search error: {e}")
         import traceback

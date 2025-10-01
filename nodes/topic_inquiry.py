@@ -16,6 +16,16 @@ def topic_inquiry_node(state: HealthBotState) -> HealthBotState:
     Returns:
         HealthBotState: Updated state with patient query and health topic
     """
+    # Add debug message to trace node execution
+    node_message = {
+        "type": "system", 
+        "node": "topic_inquiry", 
+        "phase": "1",
+        "timestamp": "workflow_start",
+        "action": "requesting_health_topic"
+    }
+    state["messages"].append(node_message)
+    
     # Check if this is a returning user (loop back)
     is_returning = state.get("continue_learning") == True
     
@@ -24,6 +34,15 @@ def topic_inquiry_node(state: HealthBotState) -> HealthBotState:
         print("🔄 NEW LEARNING TOPIC")
         print("=" * 60)
         print("📝 Starting fresh for privacy and accuracy...")
+        
+        # Add debug message for returning user
+        returning_message = {
+            "type": "system", 
+            "node": "topic_inquiry", 
+            "action": "returning_user_reset",
+            "details": "resetting state for new topic"
+        }
+        state["messages"].append(returning_message)
         
         # Reset topic-specific fields for new learning session
         state["patient_query"] = ""
@@ -59,7 +78,23 @@ def topic_inquiry_node(state: HealthBotState) -> HealthBotState:
     # Get patient input
     patient_query = input("💬 What health topic or medical condition would you like to learn about? ")
     
+    # Log user input for debugging
+    user_input_message = {
+        "type": "human", 
+        "node": "topic_inquiry", 
+        "content": patient_query,
+        "action": "topic_selection"
+    }
+    state["messages"].append(user_input_message)
+    
     if not patient_query.strip():
+        error_message = {
+            "type": "system", 
+            "node": "topic_inquiry", 
+            "action": "error",
+            "details": "empty_topic_provided"
+        }
+        state["messages"].append(error_message)
         state["error_message"] = "Please provide a health topic to learn about."
         return state
     
@@ -69,6 +104,16 @@ def topic_inquiry_node(state: HealthBotState) -> HealthBotState:
     state["user_desired_subject"] = patient_query.strip()  # Rubric alias
     state["current_phase"] = "information_gathering"
     state["error_message"] = None
+    
+    # Log successful topic capture
+    success_message = {
+        "type": "system", 
+        "node": "topic_inquiry", 
+        "action": "topic_captured",
+        "topic": state["health_topic"],
+        "next_phase": "information_gathering"
+    }
+    state["messages"].append(success_message)
     
     print(f"\n✅ Great! I'll help you learn about: {state['health_topic']}")
     print("🔍 Let me search for the most current and reliable information...\n")

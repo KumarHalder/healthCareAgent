@@ -1,39 +1,6 @@
 """Response Evaluation Node - Phase 6 of HealthBot Workflow
 
-This module handles collecting and        # Add citations         # Add citations from sources
-        if state["information_sources"]:
-            print(f"\n🔗 This information was gathered from {len(state['information_sources'])} reliable medical sources:")
-            for i, source in enumerate(state["information_sources"][:3], 1):  # Show top 3 sources
-                print(f"   {i}. {source}")
-        
-        print("\n" + "=" * 60)
-        
-        # Ask user if they want to continue learning (conditional anchor)
-        print("🎯 LEARNING SESSION COMPLETE!")
-        continue_choice = input("\n🤔 Would you like to learn about another health topic? (yes/no): ").strip().lower()
-        
-        # Update continue_learning field that controls the conditional edge
-        if continue_choice in ['yes', 'y', 'yeah', 'sure', 'ok', 'okay', '1']:
-            state["continue_learning"] = True
-            print("\n🔄 Great! Let's learn about another topic...")
-        else:
-            state["continue_learning"] = False
-            print("\n👋 Thank you for learning with HealthBot!")
-        
-        # Update state aliases for consistency
-        state["model_grade"] = grade  # Alias for rubric compliance
-        state["user_quiz_answer"] = patient_answer  # Alias for rubric compliance
-        state["current_phase"] = "conditional_check"  # Ready for conditional edgeces
-        if state["information_sources"]:
-            print(f"\n🔗 This information was gathered from {len(state['information_sources'])} reliable medical sources:")
-            for i, source in enumerate(state["information_sources"][:3], 1):  # Show top 3 sources
-                print(f"   {i}. {source}")
-        
-        print("\n" + "=" * 60)
-        
-        # Ask user if they want to continue learning (conditional anchor)
-        # Note: User continuation prompt is handled at the end of the function
-providing feedback and citations.
+This module handles collecting patient answers, evaluating them, and providing feedback.
 """
 from langchain.schema import HumanMessage
 from states.health_bot_state import HealthBotState
@@ -50,11 +17,39 @@ def response_evaluation_node(state: HealthBotState) -> HealthBotState:
     Returns:
         HealthBotState: Updated state with evaluation results and feedback
     """
+    # Add debug message to trace node execution
+    node_message = {
+        "type": "system", 
+        "node": "response_evaluation", 
+        "phase": "6",
+        "action": "collecting_patient_answer",
+        "quiz_question": state["quiz_question"]
+    }
+    state["messages"].append(node_message)
+    
     try:
         # Get patient's answer
         patient_answer = input("💬 Your answer (A, B, C, or D): ").strip().upper()
         
+        # Log patient response
+        patient_response_message = {
+            "type": "human", 
+            "node": "response_evaluation", 
+            "content": patient_answer,
+            "action": "quiz_answer_provided"
+        }
+        state["messages"].append(patient_response_message)
+        
         if patient_answer not in ['A', 'B', 'C', 'D']:
+            # Log invalid input
+            invalid_input_message = {
+                "type": "system", 
+                "node": "response_evaluation", 
+                "action": "invalid_input",
+                "provided_answer": patient_answer
+            }
+            state["messages"].append(invalid_input_message)
+            
             print("⚠️ Please enter A, B, C, or D")
             return state
         
