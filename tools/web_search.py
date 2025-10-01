@@ -7,7 +7,7 @@ from tavily import TavilyClient
 # Initialize Tavily client
 tavily_client = TavilyClient(api_key=os.getenv('TAVILY_API_KEY'))
 
-@tool
+@tool("web_search")
 def web_search(q: str) -> str:
     """Search for current medical and health information using Tavily.
     
@@ -19,6 +19,9 @@ def web_search(q: str) -> str:
     """
     try:
         response = tavily_client.search(q, search_depth="advanced", include_answer=True)
-        return response["answer"] if response and "answer" in response else "No results found"
+        return {
+            "answer": response.get("answer"),
+            "results": response.get("results", []),
+        }
     except Exception as e:
         return f"Search error: {str(e)}"

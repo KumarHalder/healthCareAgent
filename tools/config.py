@@ -21,7 +21,7 @@ def get_llm():
 def get_tool_llm():
     """Get LLM with web_search tool bound to it"""
     llm = get_llm()
-    return llm.bind_tools([web_search])
+    return llm.bind_tools(tools)
 
 
 def get_search_tool():
@@ -30,8 +30,5 @@ def get_search_tool():
 
 
 # Tool registry for easy access
-TOOLS = {
-    'llm': get_llm,
-    'tool_llm': get_tool_llm,
-    'search': get_search_tool
-}
+tools = [web_search]
+tool_map = {tool.name: tool for tool in tools}

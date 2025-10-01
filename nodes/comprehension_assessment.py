@@ -24,20 +24,17 @@ def comprehension_assessment_node(state: HealthBotState) -> HealthBotState:
         
         # Create quiz generation prompt
         quiz_prompt = f"""
-        IMPORTANT: Create a quiz question using ONLY the information provided in the summary below. 
-        Do NOT use any outside medical knowledge or information not explicitly stated in the summary.
-        The question and all answer choices must be answerable using only the provided summary content.
+        Frame one question whose answer is verbatim inferable from this summary. Do not require knowledge not contained in the summary.
         
-        Summary content about {health_topic}:
+        Model Summary:
         {summarized_info}
         
-        Create a single multiple-choice question that tests patient understanding of the information above.
-        
-        REQUIREMENTS:
-        - Question must be directly answerable from the summary alone
+        INSTRUCTIONS:
+        - Create a single multiple-choice question that tests patient understanding
+        - The question and correct answer must be verbatim inferable from the provided summary
         - All answer options (correct and incorrect) must reference only information from the summary
-        - Do not include information not mentioned in the provided summary
-        - Focus on key facts explicitly stated in the summary
+        - Do not include any information not explicitly mentioned in the summary
+        - Focus on key facts that are directly stated in the summary content
         
         Format your response as:
         QUESTION: [Your question here]
